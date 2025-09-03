@@ -1,0 +1,90 @@
+<linkset>
+  <html:link rel="localization" href="__addonRef__-preferences.ftl" />
+</linkset>
+<vbox style="padding: 10px;">
+  <groupbox>
+    <label value="Articles to Remove" style="font-weight: bold;" />
+    <html:textarea id="zotero-prefpane-__addonRef__-articles" preference="articles" rows="3"
+      style="width: 100%; font-family: monospace; margin-top: 8px;" placeholder="a, an, the, ..."></html:textarea>
+    <description style="margin-top: 5px;">
+      Enter articles separated by commas (e.g., a, an, the, el, la)
+    </description>
+  </groupbox>
+
+  <groupbox style="margin-top: 15px;">
+    <label value="How It Works" style="font-weight: bold; margin-bottom: 10px;" />
+    <vbox style="margin-left: 10px;">
+      <description style="margin-bottom: 5px;">
+        • New items: Automatically get the field when created
+      </description>
+      <description style="margin-bottom: 5px;">
+        • Existing items: Only update if field already exists. Use right-click menu to add
+      </description>
+      <description>
+        • Manual control: Remove field from Extra to disable auto-updates
+      </description>
+    </vbox>
+  </groupbox>
+
+  <groupbox style="margin-top: 15px;">
+    <label value="Using in Citation Styles" style="font-weight: bold; margin-bottom: 10px;" />
+    <vbox style="margin-left: 10px;">
+      <description style="margin-bottom: 8px;">
+        To modify any CSL style for article-free sorting:
+      </description>
+      <description style="margin-bottom: 5px; font-weight: bold;">
+        Step 1: Add this wrapper macro
+      </description>
+      <html:pre
+        style="background-color: var(--background-color-box); border: 1px solid var(--border-color); padding: 8px; margin: 8px 0; font-family: monospace; font-size: 11px; overflow-x: auto;">
+        &lt;!-- Macro for sorting with title-without-articles when available --&gt;
+        &lt;macro name="title-sort-without-articles"&gt;
+        &lt;choose&gt;
+        &lt;if variable="title-without-articles"&gt;
+        &lt;text variable="title-without-articles"/&gt;
+        &lt;/if&gt;
+        &lt;else&gt;
+        &lt;!-- Fallback to the standard title sorting logic --&gt;
+        &lt;text macro="title-and-descriptions-bib"/&gt;
+        &lt;/else&gt;
+        &lt;/choose&gt;
+        &lt;/macro&gt;</html:pre>
+      <description style="margin-bottom: 5px; font-weight: bold;">
+        Step 2: Replace the title sort key in bibliography
+      </description>
+      <html:pre
+        style="background-color: var(--background-color-box); border: 1px solid var(--border-color); padding: 8px; margin: 8px 0; font-family: monospace; font-size: 11px; overflow-x: auto;">
+        &lt;bibliography et-al-min="7" et-al-use-first="3" hanging-indent="true"&gt;
+        &lt;sort&gt;
+        &lt;key macro="author-sort"/&gt;
+        &lt;key macro="date-sort-group"/&gt;
+        &lt;key macro="date-sort-year"/&gt;
+        &lt;key macro="date"/&gt;
+
+<html:span style="display: block; text-decoration: line-through; opacity: 0.5;">        &lt;key macro="title-and-descriptions-bib"/&gt; &lt;!-- Original --&gt;</html:span><html:span style="display: block; background-color: var(--accent-color-yellow); color: var(--text-color-primary);">        &lt;key macro="title-sort-without-articles"/&gt; &lt;!-- Replaced --&gt;</html:span>
+        &lt;key macro="source-bib"/&gt;
+        &lt;key variable="volume"/&gt;
+        &lt;key variable="part-number"/&gt;
+        &lt;key variable="event-date"/&gt;
+        &lt;key variable="issued"/&gt;
+        &lt;key macro="source-archive-bib"/&gt;
+        &lt;/sort&gt;
+        &lt;!-- ...other existing content... --&gt;
+        &lt;/bibliography&gt;
+      </html:pre>
+      <description style="margin-bottom: 3px;">
+        This preserves all special handling (legal cases, bills, etc.) while adding article-free sorting.
+      </description>
+      <description style="margin-top: 5px; font-style: italic;">
+        See working example: assets/chicago-18-author-date-no-articles.csl
+      </description>
+    </vbox>
+  </groupbox>
+
+  <hbox style="margin-top: 15px;">
+    <description style="color: #999;">
+      <html:span data-l10n-id="pref-help"
+        data-l10n-args='{"time": "__buildTime__","name": "__addonName__","version":"__buildVersion__"}'></html:span>
+    </description>
+  </hbox>
+</vbox>
