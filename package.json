@@ -1,7 +1,7 @@
 {
   "name": "zotero-title-without-articles",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zotero plugin to automatically generate sort titles without articles for bibliography sorting",
   "config": {
     "addonName": "Title Without Articles",
