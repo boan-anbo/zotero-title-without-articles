@@ -85,7 +85,7 @@ To enable article-free sorting in any CSL style, add a wrapper [macro](https://d
       <text variable="title-without-articles"/>
     </if>
     <else>
-      <!-- Fallback to the standard title sorting logic -->
+      <!-- Fallback to the standard title sorting logic when the item doesn't have a title-without-articles -->
       <text macro="title-and-descriptions-bib"/>
     </else>
   </choose>
@@ -113,17 +113,12 @@ To enable article-free sorting in any CSL style, add a wrapper [macro](https://d
 
 You can customize the list of leading articles to remove in the plugin preferences:
 
-1. Go to Tools → Add-ons
-2. Find "Title Without Articles" and click "Preferences"
-3. Modify the list of articles as needed (default: `a, an, the`)
+1. Preferences → General → "Title Without Articles" _or_ Right-click select "Preferences" under "Title Without Articles"
+2. Modify the list of articles as needed (default: `a, an, the`)
    - Add articles from any language: `el, la, le, der, die, das`
    - Or any leading words you want to ignore for sorting: `on, in, at`
 
 Note: Only words at the **beginning** of titles are removed. "The Great Gatsby" becomes "Great Gatsby", but "Journey to the West" remains unchanged.
-
-## Development
-
-For development instructions, see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 
