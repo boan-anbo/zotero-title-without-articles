@@ -118,7 +118,7 @@ You can customize the list of leading articles to remove in the plugin preferenc
 3. Modify the list of articles as needed (default: `a, an, the`)
    - Add articles from any language: `el, la, le, der, die, das`
    - Or any leading words you want to ignore for sorting: `on, in, at`
-   
+
 Note: Only words at the **beginning** of titles are removed. "The Great Gatsby" becomes "Great Gatsby", but "Journey to the West" remains unchanged.
 
 ## Development

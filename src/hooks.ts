@@ -1,4 +1,7 @@
-import { getSortTitleFieldName, processItem } from "./modules/titleWithoutArticles";
+import {
+  getSortTitleFieldName,
+  processItem,
+} from "./modules/titleWithoutArticles";
 import { UIFactory } from "./modules/ui";
 import { getString, initLocale } from "./utils/locale";
 import { createZToolkit } from "./utils/ztoolkit";
@@ -13,7 +16,7 @@ async function onStartup() {
   initLocale();
 
   // Register notifier to auto-generate/update titles without articles
-  // 
+  //
   // AUTO-UPDATE LOGIC:
   // 1. New items (manually created): Add placeholder field "[pending]" immediately
   //    - When user adds title, it triggers modify event and updates the field
@@ -28,50 +31,59 @@ async function onStartup() {
   // - Existing items only update if they already have the field
   // - Users can manually remove the field and it won't regenerate
   // - Changing preferences updates existing fields but doesn't add new ones
-  Zotero.Notifier.registerObserver({
-    notify: async (event: string, type: string, ids: string[] | number[], extraData: any) => {
-      if (type === "item") {
-        if (event === "add") {
-          // For new items, add a placeholder field so it gets updated when title is added
-          for (const id of ids) {
-            const item = await Zotero.Items.getAsync(id as number);
-            if (item && !item.isNote() && !item.isAttachment()) {
-              const title = item.getField("title");
+  Zotero.Notifier.registerObserver(
+    {
+      notify: async (
+        event: string,
+        type: string,
+        ids: string[] | number[],
+        extraData: any,
+      ) => {
+        if (type === "item") {
+          if (event === "add") {
+            // For new items, add a placeholder field so it gets updated when title is added
+            for (const id of ids) {
+              const item = await Zotero.Items.getAsync(id as number);
+              if (item && !item.isNote() && !item.isAttachment()) {
+                const title = item.getField("title");
 
-              if (!title) {
-                // New item with empty title - add placeholder field
-                // This ensures the field exists for when user adds the title
-                let extra = item.getField("extra") || "";
-                const fieldName = getSortTitleFieldName();
+                if (!title) {
+                  // New item with empty title - add placeholder field
+                  // This ensures the field exists for when user adds the title
+                  let extra = item.getField("extra") || "";
+                  const fieldName = getSortTitleFieldName();
 
-                // Only add if not already present
-                if (!extra.includes(fieldName)) {
-                  const placeholder = `${fieldName}: [pending]`;
-                  extra = extra ? `${placeholder}\n${extra}` : placeholder;
-                  item.setField("extra", extra);
-                  await item.saveTx();
+                  // Only add if not already present
+                  if (!extra.includes(fieldName)) {
+                    const placeholder = `${fieldName}: [pending]`;
+                    extra = extra ? `${placeholder}\n${extra}` : placeholder;
+                    item.setField("extra", extra);
+                    await item.saveTx();
+                  }
+                } else {
+                  // Item already has title (e.g., imported/duplicated)
+                  await processItem(item, true);
                 }
-              } else {
-                // Item already has title (e.g., imported/duplicated)
-                await processItem(item, true);
+              }
+            }
+          } else if (event === "modify") {
+            // For modified items, just check if we need to update existing field
+            for (const id of ids) {
+              const item = await Zotero.Items.getAsync(id as number);
+              if (item && !item.isNote() && !item.isAttachment()) {
+                // Simple logic: on any modification, update if field exists
+                // This handles title changes and preference changes
+                // Don't force - only update if field already exists
+                await processItem(item, false);
               }
             }
           }
-        } else if (event === "modify") {
-          // For modified items, just check if we need to update existing field
-          for (const id of ids) {
-            const item = await Zotero.Items.getAsync(id as number);
-            if (item && !item.isNote() && !item.isAttachment()) {
-              // Simple logic: on any modification, update if field exists
-              // This handles title changes and preference changes
-              // Don't force - only update if field already exists
-              await processItem(item, false);
-            }
-          }
         }
-      }
-    }
-  }, ["item"], "titleWithoutArticles");
+      },
+    },
+    ["item"],
+    "titleWithoutArticles",
+  );
 
   await Promise.all(
     Zotero.getMainWindows().map((win) => onMainWindowLoad(win)),
@@ -172,11 +184,14 @@ async function onNotify(
  */
 async function onPrefsEvent(type: string, data: { [key: string]: any }) {
   switch (type) {
-    case "load":
+    case "load": {
       // Register preference UI if needed
-      const { registerPrefsScripts } = await import("./modules/preferenceScript");
+      const { registerPrefsScripts } = await import(
+        "./modules/preferenceScript"
+      );
       await registerPrefsScripts(data.window);
       break;
+    }
     default:
       return;
   }
