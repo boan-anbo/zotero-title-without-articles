@@ -11,7 +11,7 @@ export async function registerPrefsScripts(_window: Window) {
   } else {
     addon.data.prefs.window = _window;
   }
-  
+
   // No need for table or complex UI - our preferences are simple
   bindPrefEvents();
 }
@@ -19,16 +19,19 @@ export async function registerPrefsScripts(_window: Window) {
 function bindPrefEvents() {
   // Add event listener for the articles textarea if needed
   const articlesTextarea = addon.data.prefs!.window.document?.querySelector(
-    `#zotero-prefpane-${config.addonRef}-articles`
+    `#zotero-prefpane-${config.addonRef}-articles`,
   ) as HTMLTextAreaElement;
-  
+
   if (articlesTextarea) {
     // Set initial value from preferences
-    const currentValue = Zotero.Prefs.get(`${config.prefsPrefix}.articles`, true) as string;
+    const currentValue = Zotero.Prefs.get(
+      `${config.prefsPrefix}.articles`,
+      true,
+    ) as string;
     if (currentValue) {
       articlesTextarea.value = currentValue;
     }
-    
+
     // Save on change
     articlesTextarea.addEventListener("change", (e: Event) => {
       const newValue = (e.target as HTMLTextAreaElement).value;

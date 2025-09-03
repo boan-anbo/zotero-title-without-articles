@@ -1,4 +1,8 @@
-import { processItems, clearSortTitles, extractSortTitleFromExtra } from "./titleWithoutArticles";
+import {
+  processItems,
+  clearSortTitles,
+  extractSortTitleFromExtra,
+} from "./titleWithoutArticles";
 import { getString } from "../utils/locale";
 
 export class UIFactory {
@@ -17,17 +21,19 @@ export class UIFactory {
           tag: "menuitem" as const,
           id: "title-without-articles-update",
           label: getString("menuitem-update-titles"),
-          commandListener: (ev: any) => UIFactory.handleAddSortTitle(getItems()),
+          commandListener: (ev: any) =>
+            UIFactory.handleAddSortTitle(getItems()),
         },
         {
           tag: "menuitem" as const,
           id: "title-without-articles-remove",
           label: getString("menuitem-remove-titles"),
-          commandListener: (ev: any) => UIFactory.handleRemoveSortTitle(getItems()),
+          commandListener: (ev: any) =>
+            UIFactory.handleRemoveSortTitle(getItems()),
           getVisibility: () => {
             const items = getItems();
             // Only show if at least one item has a title without articles
-            return items.some(item => {
+            return items.some((item) => {
               const extra = item.getField("extra");
               return extra && extractSortTitleFromExtra(extra);
             });
@@ -50,19 +56,25 @@ export class UIFactory {
     });
 
     // Register for item context menu
-    ztoolkit.Menu.register("item", 
-      createMenuStructure(() => ztoolkit.getGlobal("ZoteroPane").getSelectedItems())
+    ztoolkit.Menu.register(
+      "item",
+      createMenuStructure(() =>
+        ztoolkit.getGlobal("ZoteroPane").getSelectedItems(),
+      ),
     );
 
     // Register for collection context menu
-    ztoolkit.Menu.register("collection", 
+    ztoolkit.Menu.register(
+      "collection",
       createMenuStructure(() => {
-        const collection = ztoolkit.getGlobal("ZoteroPane").getSelectedCollection();
+        const collection = ztoolkit
+          .getGlobal("ZoteroPane")
+          .getSelectedCollection();
         if (collection) {
           return collection.getChildItems();
         }
         return [];
-      })
+      }),
     );
   }
 
@@ -73,33 +85,42 @@ export class UIFactory {
     if (!items) {
       items = ztoolkit.getGlobal("ZoteroPane").getSelectedItems();
     }
-    
+
     if (items.length === 0) {
       return;
     }
 
     // Only show notification for multiple items
     if (items.length > 1) {
-      const progressWin = new ztoolkit.ProgressWindow(addon.data.config.addonName, {
-        closeOnClick: true,
-        closeTime: -1,
-      });
-      
-      progressWin.createLine({
-        text: getString("progress-processing", { args: { count: items.length } }),
-        type: "default",
-        progress: 0,
-      }).show();
+      const progressWin = new ztoolkit.ProgressWindow(
+        addon.data.config.addonName,
+        {
+          closeOnClick: true,
+          closeTime: -1,
+        },
+      );
+
+      progressWin
+        .createLine({
+          text: getString("progress-processing", {
+            args: { count: items.length },
+          }),
+          type: "default",
+          progress: 0,
+        })
+        .show();
 
       try {
         const processed = await processItems(items, true); // Force process for manual action
-        
+
         progressWin.changeLine({
-          text: getString("progress-completed", { args: { processed, total: items.length } }),
+          text: getString("progress-completed", {
+            args: { processed, total: items.length },
+          }),
           type: "success",
           progress: 100,
         });
-        
+
         // Auto-close after 2 seconds
         progressWin.startCloseTimer(2000);
       } catch (error) {
@@ -108,7 +129,7 @@ export class UIFactory {
           type: "fail",
           progress: 100,
         });
-        
+
         progressWin.startCloseTimer(3000);
         Zotero.logError(error as Error);
       }
@@ -125,33 +146,42 @@ export class UIFactory {
     if (!items) {
       items = ztoolkit.getGlobal("ZoteroPane").getSelectedItems();
     }
-    
+
     if (items.length === 0) {
       return;
     }
 
     // Only show notification for multiple items
     if (items.length > 1) {
-      const progressWin = new ztoolkit.ProgressWindow(addon.data.config.addonName, {
-        closeOnClick: true,
-        closeTime: -1,
-      });
-      
-      progressWin.createLine({
-        text: getString("progress-removing", { args: { count: items.length } }),
-        type: "default",
-        progress: 0,
-      }).show();
+      const progressWin = new ztoolkit.ProgressWindow(
+        addon.data.config.addonName,
+        {
+          closeOnClick: true,
+          closeTime: -1,
+        },
+      );
+
+      progressWin
+        .createLine({
+          text: getString("progress-removing", {
+            args: { count: items.length },
+          }),
+          type: "default",
+          progress: 0,
+        })
+        .show();
 
       try {
         const cleared = await clearSortTitles(items);
-        
+
         progressWin.changeLine({
-          text: getString("progress-removed", { args: { cleared, total: items.length } }),
+          text: getString("progress-removed", {
+            args: { cleared, total: items.length },
+          }),
           type: "success",
           progress: 100,
         });
-        
+
         // Auto-close after 2 seconds
         progressWin.startCloseTimer(2000);
       } catch (error) {
@@ -160,7 +190,7 @@ export class UIFactory {
           type: "fail",
           progress: 100,
         });
-        
+
         progressWin.startCloseTimer(3000);
         Zotero.logError(error as Error);
       }
@@ -181,7 +211,7 @@ export class UIFactory {
       dataProvider: (item: Zotero.Item, dataKey: string) => {
         const extra = item.getField("extra");
         if (!extra) return "";
-        
+
         const sortTitle = extractSortTitleFromExtra(extra);
         return sortTitle || "";
       },
@@ -195,49 +225,54 @@ export class UIFactory {
   static registerToolbarButton() {
     const toolbarID = "zotero-tb-advanced-search";
     const toolbar = ztoolkit.getGlobal("document").getElementById(toolbarID);
-    
+
     if (!toolbar) return;
-    
-    const button = ztoolkit.UI.createElement(ztoolkit.getGlobal("document"), "toolbarbutton", {
-      id: "title-without-articles-button",
-      classList: ["zotero-tb-button"],
-      attributes: {
-        tooltiptext: getString("toolbar-button-tooltip"),
-        type: "menu",
-      },
-      children: [
-        {
-          tag: "menupopup",
-          children: [
-            {
-              tag: "menuitem",
-              attributes: {
-                label: getString("menuitem-update-titles"),
-                oncommand: "Zotero.TitleWithoutArticles.handleAddSortTitle()",
-              },
-            },
-            {
-              tag: "menuitem",
-              attributes: {
-                label: getString("menuitem-remove-titles"),
-                oncommand: "Zotero.TitleWithoutArticles.handleRemoveSortTitle()",
-              },
-            },
-            {
-              tag: "menuseparator",
-            },
-            {
-              tag: "menuitem",
-              attributes: {
-                label: getString("menuitem-preferences"),
-                oncommand: "Zotero.TitleWithoutArticles.openPreferences()",
-              },
-            },
-          ],
+
+    const button = ztoolkit.UI.createElement(
+      ztoolkit.getGlobal("document"),
+      "toolbarbutton",
+      {
+        id: "title-without-articles-button",
+        classList: ["zotero-tb-button"],
+        attributes: {
+          tooltiptext: getString("toolbar-button-tooltip"),
+          type: "menu",
         },
-      ],
-    });
-    
+        children: [
+          {
+            tag: "menupopup",
+            children: [
+              {
+                tag: "menuitem",
+                attributes: {
+                  label: getString("menuitem-update-titles"),
+                  oncommand: "Zotero.TitleWithoutArticles.handleAddSortTitle()",
+                },
+              },
+              {
+                tag: "menuitem",
+                attributes: {
+                  label: getString("menuitem-remove-titles"),
+                  oncommand:
+                    "Zotero.TitleWithoutArticles.handleRemoveSortTitle()",
+                },
+              },
+              {
+                tag: "menuseparator",
+              },
+              {
+                tag: "menuitem",
+                attributes: {
+                  label: getString("menuitem-preferences"),
+                  oncommand: "Zotero.TitleWithoutArticles.openPreferences()",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    );
+
     toolbar.appendChild(button);
   }
 
@@ -258,34 +293,34 @@ export class UIFactory {
       },
       onRender: ({ body, item, editable, tabType }) => {
         if (!item) return;
-        
+
         const doc = body.ownerDocument;
         if (!doc) return;
-        
+
         // Clear any existing content first
         body.innerHTML = "";
-        
+
         const extra = item.getField("extra");
         const sortTitle = extra ? extractSortTitleFromExtra(extra) : null;
-        
+
         const container = doc.createElement("div");
         container.style.display = "flex";
         container.style.flexDirection = "row";
         container.style.alignItems = "center";
         container.style.gap = "8px";
-        
+
         const text = doc.createElement("div");
         text.style.flex = "1";
         text.textContent = sortTitle || getString("itemPane-no-sort-title");
-        
+
         if (!sortTitle) {
           text.style.color = "#999";
           text.style.fontStyle = "italic";
         }
-        
+
         if (editable) {
           const button = doc.createElement("button");
-          button.textContent = sortTitle 
+          button.textContent = sortTitle
             ? getString("button-regenerate")
             : getString("button-generate");
           button.style.fontSize = "11px";
@@ -294,7 +329,7 @@ export class UIFactory {
           });
           container.appendChild(button);
         }
-        
+
         container.insertBefore(text, container.firstChild);
         body.appendChild(container);
       },
@@ -318,9 +353,9 @@ export class UIFactory {
       "chrome://zotero/content/preferences/preferences.xhtml",
       "zotero-prefs",
       "chrome,titlebar,toolbar,centerscreen",
-      { 
+      {
         pane: `zotero-prefpane-${addon.data.config.addonRef}`,
-      }
+      },
     );
   }
 }
